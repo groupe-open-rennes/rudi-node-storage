@@ -1,0 +1,17 @@
+package-lock.json
+*.lock
+node_modules
+
+keys
+.ssh
+*.pem
+
+.vscode
+*.code-workspace
+
+_logs
+_media
+media
+
+*.pyc
+*.tgz

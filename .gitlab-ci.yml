@@ -1,0 +1,44 @@
+# --------------------------------------------------------------------------------------------------
+# Notes:
+# - jobs are executed in the order indicated at root "stages" property
+# - "needs" property needs an array of job names (not stages names)
+# - linter needs install:dev as eslint and prettier are dev dependencies
+# --------------------------------------------------------------------------------------------------
+stages:
+  - quality
+  - pack_prod
+
+quality_dev:
+  stage: quality
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE != "push"'
+      when: manual
+  tags:
+    - nodejs-20
+  variables:
+    NODE_ENV: development
+  script:
+    - npm i || (npm cache clean --force && npm i)
+    - npm run lint
+
+pack_prod:
+  stage: pack_prod
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      when: on_success
+    - if: '$CI_PIPELINE_SOURCE != "push"'
+      when: manual
+  tags:
+    - nodejs
+  variables:
+    NODE_ENV: production
+  script:
+    - npm i || (npm cache clean --force && npm i)
+    - npm pack
+  artifacts:
+    name: 'rudi_media.tgz'
+    when: on_success
+    paths:
+      - ./rudi_media_drv-*.tgz

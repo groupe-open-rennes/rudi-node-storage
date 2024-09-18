@@ -1,0 +1,43 @@
+{
+  "name": "rudi_media_drv",
+  "version": "1.2.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "@aqmo.org/jwt-lib": "^1.1.12",
+    "@aqmo.org/rudi_logger": "^1.1.6",
+    "express": "^4.21.0",
+    "ini": "^5.0.0",
+    "magic-bytes.js": "^1.10.0",
+    "md5": "^2.3.0",
+    "minimist": "^1.2.8",
+    "mongodb": "^6.9.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@babel/eslint-parser": "^7.25.1",
+    "@babel/preset-env": "^7.25.4",
+    "eslint": "^9.10.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "nodemon": "^3.1.5",
+    "prettier": "^3.3.3"
+  },
+  "couldHaveDependencies": {
+    "unix-dgram": "^2.0.4"
+  },
+  "scripts": {
+    "start": "nodemon index.js",
+    "debug": "nodemon index.js -p 3201 -l './_logs' --revision 'devO' --ini ./rudi_media_custom.ini",
+    "debug_ini": "nodemon index.js --ini local.ini",
+    "docker": "./node_modules/.bin/nodemon index.js -p ${L_PORT} -l ${L_LOGNAME}",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "prettier -c \"**/*.js\" && eslint \"**/*.js\"",
+    "prettify": "prettier --write \"**/*.js\""
+  },
+  "author": "Laurent Morin",
+  "license": "EUPL-1.2"
+}
