@@ -5,7 +5,7 @@
 </p>
 
 <h2 align="center" >Rudi Node Storage</h3>
-<p align="center">Le gestionnaire de connecteur média pour RUDI qui assure l'interface entre le RUDI Productor et le système de stockage.</p>
+<p align="center">Le gestionnaire de connecteur média pour RUDI qui assure l'interface entre le noeud producteur de RUDI et le système de stockage.</p>
 
 <p align="center"><a href="https://rudi.rennesmetropole.fr/">🌐 Instance de Rennes Métropole</a> · <a href="doc.rudi.bzh">📚 Documentation</a> ·  <a href="https://blog.rudi.bzh/">📰 Blog</a><p>
 <br>
@@ -117,3 +117,10 @@ npm install
 
 Laurent Morin - Université Rennes 1
 
+## Contribuer à Rudi
+
+Nous accueillons et encourageons les contributions de la communauté. Voici comment vous pouvez participer :
+- 🛣️ [Feuille de route](https://github.com/orgs/rudi-platform/projects/2)
+- 🐞 [Signaler un bug du portail](https://github.com/rudi-platform/rudi-node-storage/issues)
+- ✨ [Contribuer](https://github.com/rudi-platform/.github/blob/main/CONTRIBUTING.md)
+- 🗣️ [Participer aux discussions](https://github.com/orgs/rudi-platform/discussions)
