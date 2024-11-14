@@ -553,6 +553,7 @@ export class BasicFileDB {
 
     // Load the data asynchronously
     const media = this.db[iddesc.ref]
+    this.syslog.debug(`T media.size: ${media.size}`)
     media.getFile(
       iddesc,
       (err, code) => {

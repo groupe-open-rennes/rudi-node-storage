@@ -129,17 +129,16 @@ class HttpService {
     this.syslog.error(`An error happened on ${req.method} ${req.url}: ${err}`)
     console.error('[Local dump]', err)
 
-    if (res.headersSent) {
-      return
-    }
-    // res.status(500)
-    // res.render('error', { time: now.getTime(), error: err })
-    res.status(500).json({
-      error: `An error was thrown, please contact the Admin with the information bellow`,
-      message: err.message,
-      time: now.getTime(),
-    })
+    return (
+      res.headersSent ||
+      res.status(500).json({
+        error: `An error was thrown, please contact the Admin with the information bellow`,
+        message: err.message,
+        time: now.getTime(),
+      })
+    )
   }
+
   _logRequests(req, reply, next) {
     this.syslog.info(`Request <= ${req.method} ${req.url}`)
     next()
@@ -745,31 +744,40 @@ class HttpService {
       fileid,
       aclStatus,
       () => this.sendAndClose(res, 404, { status: 'error', msg: 'could not get media content' }),
-      (data, name, mimetype) => {
-        this.syslog.info(`full read with connector: ${fileid}`, 'core')
-        const compressionMode = req.headers['media-access-compression']
-        const content = data
-        res.header('Access-Control-Allow-Origin', '*')
-        res.setHeader('Content-Disposition', `attachment; filename="${name}"`)
-        if (compressionMode?.toLowerCase() == 'true') {
-          gzip(data, (err, buffer) => {
-            if (err) {
-              res.type('application/octet-stream')
-              res.write(content)
-            } else {
-              res.setHeader('Content-Disposition', `attachment; filename="${name}.gz"`)
-              res.type('application/gzip')
-              res.write(buffer)
-            }
-            res.status(200).end()
-          })
-        } else {
-          res.type(mimetype)
-          res.write(content)
-          res.status(200).end()
-        }
-      }
+      (data, name, mimetype, size, md5) => this.sendFile(req, res, { fileid, data, name, mimetype, size, md5 })
     )
+  }
+
+  sendFile = (req, res, { fileid, data, name, mimetype, size, md5 }) => {
+    this.syslog.info(`full read with connector: ${fileid}`, 'core')
+    const compressionMode = req.headers['media-access-compression']
+    const content = data
+    res.header('Access-Control-Allow-Origin', '*')
+    res.setHeader('Content-Disposition', `attachment; filename="${name}"`)
+    if (compressionMode?.toLowerCase() == 'true') {
+      gzip(data, (err, buffer) => {
+        if (err) {
+          res.type('application/octet-stream')
+          res.setHeader('Content-Length', content.byteLength)
+          res.setHeader('Content-Digest', md5)
+          res.write(content)
+        } else {
+          res.setHeader('Content-Disposition', `attachment; filename="${name}.gz"`)
+          res.setHeader('Content-Length', buffer.byteLength)
+          res.type('application/gzip')
+          res.write(buffer)
+        }
+        res.status(200).end()
+      })
+    } else {
+      this.syslog.debug(`T mimetype: ${mimetype}`)
+      this.syslog.debug(`T size: ${content.byteLength}`)
+      res.type(mimetype)
+      res.setHeader('Content-Length', content.byteLength)
+      res.setHeader('Content-Digest', md5)
+      res.write(content)
+      res.status(200).end()
+    }
   }
 }
 

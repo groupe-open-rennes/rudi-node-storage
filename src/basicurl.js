@@ -252,7 +252,7 @@ export class BasicUrlEntry {
       const previousHash = this.md5
       if (hash != previousHash) {
         this.md5 = hash
-        this.size = data.length
+        this.size = data.byteLength || data.length
       }
       if (done) done(hash, previousHash, this.size)
     })

@@ -8,7 +8,7 @@
 // External dependencies
 // -------------------------------------------------------------------------------------------------
 import { createHash } from 'crypto'
-import { readFile } from 'fs'
+import { readFile, readFileSync } from 'fs'
 import { v4 as uuidv4 } from 'uuid'
 
 // -------------------------------------------------------------------------------------------------
@@ -209,13 +209,27 @@ export class BasicFileEntry {
       if (none) none('loading media: source missing in context', 404)
       return
     }
-    readFile(idesc.source, { flag: 'r' }, function (err, data) {
+    // console.log('T idesc.source:', idesc.source)
+    // console.log('T idesc.hash:', this.md5)
+    // console.log('T idesc.size:', this.size)
+    readFile(idesc.source, { flag: 'r' }, (err, data) => {
       if (err) {
         console.error('Error: critical failure: could not load ' + idesc.source)
         if (none) none('loading media: file error', 500)
         return
       }
-      if (done) done(data, idesc.filename, idesc.type)
+      const hash = createHash('md5').update(data).digest('hex')
+      const previousHash = this.md5
+      if (hash != previousHash) {
+        this.md5 = hash
+        this.size = data.byteLength
+      }
+      console.log('T idesc.hash:', this.md5)
+      console.log('T idesc.size:', this.size)
+      console.log('T data.size:', data.byteLength)
+      if (done) {
+        done(data, idesc.filename, idesc.type, this.size, this.md5)
+      }
     })
   }
   /**
@@ -238,9 +252,29 @@ export class BasicFileEntry {
       const previousHash = this.md5
       if (hash != previousHash) {
         this.md5 = hash
-        this.size = data.length
+        this.size = data.byteLength
       }
       if (done) done(hash, previousHash, this.size)
     })
+  }
+
+  getRealMd5Sync(none, done) {
+    const source = this.zone.getPathFromConnector(this)
+    let data
+    try {
+      data = readFileSync(source, { flag: 'r' })
+    } catch (err) {
+      console.error(`Error: critical failure: could not load '${source}'. Cause: ${err}`)
+      if (none) none('loading media: file error', 500)
+      return
+    }
+    const hash = createHash('md5').update(data).digest('hex')
+    const previousHash = this.md5
+    if (hash != previousHash) {
+      this.md5 = hash
+      this.size = data.byteLength
+    }
+    if (done) return done(this.md5, previousHash, this.size)
+    return { md5: this.md5, previous_hash: previousHash, size: this.size }
   }
 }
