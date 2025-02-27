@@ -43,7 +43,7 @@ export const jsonToStr = (jsonObject, option) => {
 }
 
 export const cleanHeadersAuth = (str) =>
-  typeof str == 'string' ? str.replace(/["'](Bearer|Basic) [\w-/\.]+["']/g, '<auth>') : cleanHeadersAuth(jsonToStr(str))
+  typeof str == 'string' ? str.replace(/["'](Bearer|Basic) [\w-/.]+["']/g, '<auth>') : cleanHeadersAuth(jsonToStr(str))
 
 export const safeStringify = (str) => (str ? cleanHeadersAuth(str) : '')
 
@@ -58,6 +58,6 @@ export const omit = (obj, key) => {
   return rest
 }
 
-const ARGV = omit(minimist(process.argv), '_')
+const ARGV = omit(minimist(process.argv, { string: ['hash', 'revision'] }), '_')
 console.debug('CLI options:', ARGV)
 export const getArgv = (opt) => (opt ? ARGV[opt] : ARGV)

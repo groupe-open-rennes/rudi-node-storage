@@ -70,8 +70,8 @@ export class BasicUrlEntry {
    */
   static urlSchema(contextRef, metaRef) {
     return {
-      title: 'The RUDI media DB file Schema',
-      description: 'The descriptor of a file associated to a RUDI media.',
+      title: 'The RUDI Storage DB file Schema',
+      description: 'The descriptor of a file associated to a RUDI Storage.',
       type: 'object',
       properties: {
         uuid: {
@@ -212,7 +212,6 @@ export class BasicUrlEntry {
           }).on('error', (error) => {
             console.error('Error: critical failure: could not load ' + sourceUrl.href + ': ' + error)
             if (none) none('loading media: file error', 500)
-            return
           })
           break
         }

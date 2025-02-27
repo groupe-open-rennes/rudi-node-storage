@@ -37,7 +37,7 @@ export const DEFAULT_CONF = {
     },
   },
   schemas: {
-    schema_basename: 'rudi-media-db-',
+    schema_basename: 'rudi-storage-db-',
     schema_context: 'context.json',
     schema_meta: 'meta.json',
     schema_event: 'event.json',
@@ -55,7 +55,7 @@ export const DEFAULT_CONF = {
   database: {
     disabled: false,
     db_url: 'mongodb://localhost:27017/',
-    db_name: 'rudi_media',
+    db_name: 'rudi_storage',
   },
   logging: {
     revision: '-',
@@ -64,16 +64,16 @@ export const DEFAULT_CONF = {
   log_server: {
     path: '127.0.0.1',
     port: 514,
-    transport: 1, // TCP=1, UNIX=4
+    transport: 2, // TCP=1, UDP=2, UNIX=4
     facility: 20, // Local4
     tcpTimeout: 10000, // Local4
     retryTimeout: 0,
     rfc3164: false,
-    level: 'warning',
+    level: 'debug',
   },
   log_local: {
     directory: './_logs/',
-    prefix: 'RudiMedia-',
+    prefix: 'RudiStorage-',
     console: true,
     consoleData: false,
     logRotationSec: 8 * 60 * 60, // 8 hours.

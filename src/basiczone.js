@@ -7,7 +7,7 @@
 // -------------------------------------------------------------------------------------------------
 // External dependencies
 // -------------------------------------------------------------------------------------------------
-import { mkdirSync, readFile, renameSync, rmSync, stat, writeFile } from 'fs'
+import { mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFile } from 'fs'
 import { v4 as uuidv4 } from 'uuid'
 
 import { Severity } from '@aqmo.org/rudi_logger'
@@ -58,8 +58,10 @@ class ZoneContext {
     this.auth.userId = uuid
     this.auth.access = access
     const [message] = this.acldb.errDesc(accError)
-    const sev = accError ? Severity.Warning : Severity.Informational
-    this.acldb.log(sev, '[' + this.auth.userName + ']:' + this.opType + ': ' + message, this.errContext(0))
+    if (accError) {
+      const sev = accError ? Severity.Warning : Severity.Informational
+      this.acldb.log(sev, '[' + this.auth.userName + ']:' + this.opType + ': ' + message, this.errContext(0))
+    }
   }
 
   toJSON = () => ({
@@ -78,12 +80,13 @@ class ZoneContext {
  *
  */
 export class BasicZone {
-  constructor(acldb, parent, zoneconf) {
+  constructor(acldb, parent, zoneconf, logger) {
     this.acldb = acldb
     this.parent = parent
     this.name = zoneconf.name
     this.csv = zoneconf.csv || '_file.csv'
     this.abspath = zoneconf.abspath || false
+
     this.db = {}
     if (!zoneconf.path) {
       const basedir = !parent ? '' : typeof parent == 'object' ? parent.dirname() : '' + parent
@@ -99,23 +102,28 @@ export class BasicZone {
     this.staged_prefix = '.staged_'
     this.staging_db = {}
     this.staging_trash = {}
+
+    this.syslog = logger
   }
 
-  init(entrycb, none, done) {
+  init(entrycb) {
     try {
       mkdirSync(this.dirname, { recursive: true })
     } catch {
-      if (none) none(`[${this.name}]: could not create storage dir '${this.dirname}'`)
-      return
+      const errMsg = `[${this.name}]: could not create storage dir '${this.dirname}'`
+      this.syslog.error(errMsg)
+      throw new Error(errMsg)
     }
     // For the time being, the operator is static.
     const aclStatus = this.acldb.findUser('admin')
     if (aclStatus.accError) {
       const errd = this.acldb.errDesc(aclStatus.accError)
-      if (none) none(`[${this.name}][rudiprod] user not initialied: ${errd.accessMsg}`)
+      const errMsg = `[${this.name}][rudiprod] user not initialied: ${errd.accessMsg}`
+      this.syslog.error(errMsg)
+      throw new Error(errMsg)
     }
     this.user = aclStatus.user
-    this.loadCSV(entrycb, none, done)
+    return this.loadCSV(entrycb)
   }
 
   close(none, done) {
@@ -203,14 +211,12 @@ export class BasicZone {
     const ctx = new ZoneContext(this.acldb, aclStatus.user, 'zone_commit')
     aclStatus.setContext(ctx)
     aclStatus.setAcl(this.zoneAcl)
-    if (aclStatus.refused('--x')) {
-      none('Access denied', 401)
-      return
-    }
+    if (aclStatus.refused('--x')) return none('Access denied', 401)
 
-    if (!this.staging_db?.[suid])
-      none(`could not commit file: ${this.staging_trash?.[suid] ? 'time exceeded' : 'entry not found'}.`, 400)
-    else {
+    if (!this.staging_db?.[suid]) {
+      if (this.staging_trash?.[suid]) return none('could not commit file: time exceeded', 400)
+      return none('could not commit file: entry not found', 404)
+    } else {
       const stg = this.staging_db[suid]
       delete this.staging_db[suid]
       this.db[suid] = stg.entry
@@ -224,12 +230,11 @@ export class BasicZone {
     aclStatus.setContext(ctx)
     aclStatus.setAcl(this.zoneAcl)
     if (aclStatus.refused('-wx')) {
-      none('Access denied', 401)
-      return
+      return none('Access denied', 401)
     }
 
     if (!this.db?.[uuid]) {
-      none('could not delete file: entry not found.', 404)
+      return none('could not delete file: entry not found.', 404)
     } else {
       const entry = this.db[uuid]
       delete this.db[uuid]
@@ -370,27 +375,33 @@ export class BasicZone {
    * @param {function=} none    - An optional callback with the error if no CSV was found.
    * @param {function=} done    - An optional callback with the DB when done.
    */
-  loadCSV(entrycb, none, done) {
+  loadCSV(entrycb) {
     const path = this.getPathFromConnector(this)
     const aclStatus = this.acldb.newUserAclStatus(this.user)
     aclStatus.setContext(new ZoneContext(this.acldb, this.user, 'csv_import'))
-    stat(path, (err) => {
-      if (err) return
-      readFile(path, { encoding: 'utf8', flag: 'r' }, (err, data) => {
-        if (err) {
-          if (none) none(Error('could not open CSV file: ' + path))
-          return
-        }
-        // const context = { source:'CSV', filename:path, user:'<admin>', access:'rwx' };
-        const entries = data.split('\n')
-        for (const line of entries) {
-          if (!line || line == '') continue
-          const entry = this.newBasicEntryFromCsv(line, aclStatus)
-          if (entrycb) entrycb(aclStatus, this, entry)
-        }
-        if (done) done()
-      })
-    })
+    try {
+      statSync(path)
+    } catch {
+      this.syslog.warn(`the following file does not exist, skipping : ${path}`)
+      return
+    }
+    let data
+    try {
+      data = readFileSync(path, { encoding: 'utf8', flag: 'r' })
+    } catch (err) {
+      const errMsg = `could not open CSV file: ${path}: ${err}`
+      this.syslog.error(errMsg)
+      throw new Error(errMsg)
+    }
+    // const context = { source:'CSV', filename:path, user:'<admin>', access:'rwx' };
+    const entries = data.split('\n')
+    for (const line of entries) {
+      if (!line || line == '') continue
+      const entry = this.newBasicEntryFromCsv(line, aclStatus)
+      if (entrycb) entrycb(aclStatus, this, entry)
+      // this.syslog.debug(`new entry: ${jsonToStr(entry)}`)
+    }
+    this.syslog.debug(`CSV loaded: ${path}`)
   }
   /* eslint-disable guard-for-in */
   /**

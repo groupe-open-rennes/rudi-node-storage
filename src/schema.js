@@ -35,8 +35,8 @@ export class SchemaSet {
     const file = {
       $schema: 'http://json-schema.org/draft-07/schema',
       $id: 'rudia-media-db-file.json',
-      title: 'The RUDI media DB file Schema',
-      description: 'The descriptor of a file associated to a RUDI media.',
+      title: 'The RUDI Storage DB file Schema',
+      description: 'The descriptor of a file associated to a RUDI Storage.',
       type: 'object',
       properties: {
         uuid: { description: 'A unique UUID-V4 identifier', type: 'string' },
@@ -58,7 +58,7 @@ export class SchemaSet {
     const meta = {
       $schema: 'http://json-schema.org/draft-07/schema',
       $id: 'rudia-media-db-meta.json',
-      title: 'The RUDI media DB metadata Schema',
+      title: 'The RUDI Storage DB metadata Schema',
       description: 'The descriptor shall use the RUDI standard scheme.',
       type: 'object',
       properties: {
@@ -76,8 +76,8 @@ export class SchemaSet {
     const context = {
       $schema: 'http://json-schema.org/draft-07/schema',
       $id: 'rudia-media-db-context.json',
-      title: 'The RUDI media DB context Schema',
-      description: 'The descriptor of context associated to a RUDI media DB access.',
+      title: 'The RUDI Storage DB context Schema',
+      description: 'The descriptor of context associated to a RUDI Storage DB access.',
       type: 'object',
       properties: {
         source: { description: 'The request source', type: 'string' },

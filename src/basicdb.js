@@ -48,8 +48,8 @@ export class BasicFileDB {
    */
   static eventSchema(contextRef) {
     return {
-      title: 'The RUDI media DB event Schema',
-      description: 'The descriptor of an event associated to a RUDI media DB access.',
+      title: 'The RUDI Storage DB event Schema',
+      description: 'The descriptor of an event associated to a RUDI Storage DB access.',
       type: 'object',
       properties: {
         operation: {
@@ -148,14 +148,20 @@ export class BasicFileDB {
    * @param {function=} none        - An callback with the error if problems while closing.
    * @param {function=} done        - An callback with the entry when done.
    */
-  init(zones, withmongo) {
-    if (!withmongo) this.mongodb = null
+  async init(zones) {
+    try {
+      await this.mongodb.open()
+      this.syslog.info('DB initialized', 'core')
+    } catch (err) {
+      this.syslog.error('DB initialization failed: ' + err, 'core')
+      this.mongodb = null
+    }
 
     let defzone = null
     if (typeof zones == 'string') zones = [zones]
     for (const zoneDesc of zones) {
       const zoneDescObj = typeof zoneDesc == 'string' ? { name: zoneDesc } : zoneDesc
-      const nzone = new BasicZone(this.acldb, this.mediaDir, zoneDescObj)
+      const nzone = new BasicZone(this.acldb, this.mediaDir, zoneDescObj, this.syslog)
       this.debug(`[${nzone.name}]: csv=${nzone.csv} dir=${nzone.dirname}`)
       this.zone_db[nzone.name] = nzone
       if (!defzone) defzone = nzone.name
@@ -167,29 +173,32 @@ export class BasicFileDB {
     }
 
     // Initialize all zones.
-    const entrycb = (aclStatus, zone, entry) => this.recordEntry(aclStatus, zone, entry)
-
     const pl = []
     for (const zi of Object.keys(this.zone_db)) {
       const zoneI = this.zone_db[zi]
-      pl.push(new Promise((resolve, reject) => zoneI.init(entrycb, reject, resolve)))
+      pl.push(zoneI.init((aclStatus, zone, entry) => this.recordEntry(aclStatus, zone, entry)))
     }
-
-    Promise.all(pl).then(null, (err) => {
+    try {
+      await Promise.all(pl)
+      this.syslog.notice('All zones were opened')
+    } catch (err) {
       console.error('Could not open Zone:', err)
       this.syslog.error(`Could not open Zone: ${err}`)
-    })
+      return false
+    }
+    this.syslog.notice('Basic file DB correctly initilaized')
+    return true
   }
   /**
    * Close the file database, and flush all pending events.
    *
-   * @param {function=} none        - An callback with the error if problems while closing.
-   * @param {function=} done        - An callback with the entry when done.
+   * @param {function=} errcb       - A callback with the error if problems while closing.
+   * @param {function=} done        - A callback with the entry when done.
    */
-  close(none, done) {
+  close(errcb, done) {
     const errFct = (err) => {
       this.error('Could not close DB: ' + err)
-      if (none) none('Could not close file database: ' + err)
+      if (errcb) errcb('Could not close file database: ' + err)
     }
 
     const closeAllZones = (none, done) => {
@@ -224,7 +233,7 @@ export class BasicFileDB {
         )
       }
       Promise.all(pl).then(closeAllZones, errFct)
-    } else closeAllZones(none, done)
+    } else closeAllZones(errcb, done)
   }
   /**
    * Low level append a new basic media entry.
@@ -271,7 +280,6 @@ export class BasicFileDB {
    * @param {buffer}    filecontent   - The raw file content
    * @param {function=} none          - An optional callback with the error if meta-data are malformed
    * @param {function=} done          - An optional callback with the entry when done.
-   * @param {Boolean}   shouldAppend  - true if the file content should be appened to the existing file
    */
   addEntry(metadata, aclStatus, filecontent, mediaAccessMethod, none, done) {
     if (!metadata) {
@@ -328,8 +336,9 @@ export class BasicFileDB {
 
     zone.newBasicEntryFromMetadata(metadata, filecontent, aclStatus, mediaAccessMethod, errFct, addStepEntry, addDone)
   }
+
   commit(zoneName, commitId, aclStatus, none, done) {
-    // const here = `${this.className}.commit`
+    const here = `${this.className}.commit`
 
     if (Object.keys(this.zone_db).length <= 0) {
       this.errorCtx('DB not ready for committing', 'commit_media', zoneName, aclStatus)
@@ -361,6 +370,7 @@ export class BasicFileDB {
       commitDone
     )
   }
+
   mdelete(uuid, aclStatus, none, done) {
     if (!this.db?.[uuid]) {
       const errstr = `media ${uuid} not found`
@@ -376,7 +386,7 @@ export class BasicFileDB {
       this.logEntry(zone, 'delete_media', aclStatus, entry, none, done)
     }
 
-    zone.deleteEntry(
+    return zone.deleteEntry(
       aclStatus,
       uuid,
       (err, code) => {
