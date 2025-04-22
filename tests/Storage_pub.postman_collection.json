@@ -1,0 +1,784 @@
+{
+	"info": {
+		"_postman_id": "7c6bdfa3-106c-4c15-a6a2-d97162e66fb3",
+		"name": "03. Storage pub",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13557783",
+		"_collection_link": "https://rudirisa.postman.co/workspace/RUDI-Workspace~ce1a24e7-e510-4854-8451-d9ba84797044/collection/13557783-7c6bdfa3-106c-4c15-a6a2-d97162e66fb3?action=share&source=collection_link&creator=13557783"
+	},
+	"item": [
+		{
+			"name": "GET [PUB]",
+			"item": [
+				{
+					"name": "[PUB] Check git hash",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get git hash\", () => {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"    const res = pm.response.stream.toString('utf8')",
+									"    pm.expect(res.startsWith(/[0-9a-z]{7}/)).to.be.true",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{storageUrl}}/hash",
+							"host": [
+								"{{storageUrl}}"
+							],
+							"path": [
+								"hash"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[PUB] Check public URL",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get public URL\", () => {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"    const res = pm.response.stream.toString('utf8')",
+									"    pm.expect(res.startsWith(\"http\")).to.be.true",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"if (!pm.variables.get('storageUrl')) {",
+									"    const storageUrl = pm.collectionVariables.get('managerUrl')",
+									"    pm.collectionVariables.set('storageUrl',`${storageUrl}`.replace('prodmanager', 'media'))",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{storageUrl}}/url",
+							"host": [
+								"{{storageUrl}}"
+							],
+							"path": [
+								"url"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[PUB] Force fail",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get root\", () => {",
+									"    pm.expect(pm.response.code).to.eql(500);",
+									"    const res = pm.response.json()",
+									"    pm.expect(res.message).to.eqls(\"This error is handled, isn't it?\")",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{storageUrl}}/fail",
+							"host": [
+								"{{storageUrl}}"
+							],
+							"path": [
+								"fail"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[PUB] Get app tag",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get app git hash\", () => {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"    const res = pm.response.stream.toString('utf8')",
+									"    pm.expect(res).to.be.not.undefined",
+									"    pm.collectionVariables.set('revision', res)",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{storageUrl}}/hash",
+							"host": [
+								"{{storageUrl}}"
+							],
+							"path": [
+								"hash"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[PUB] Get schema list",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get RUDI node Storage schema list\", () => {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"    const res = pm.response.json()",
+									"    const schemaNames = Object.keys(res)",
+									"    pm.expect(schemaNames.length).to.be.gt(0)",
+									"    pm.collectionVariables.set('schemaName',schemaNames[0])",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{pmMediaToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{storageUrl}}/schemas",
+							"host": [
+								"{{storageUrl}}"
+							],
+							"path": [
+								"schemas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[PUB] Get schema 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get RUDI node storage first schema\", () => {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"    const res = pm.response.json()",
+									"    pm.expect(Object.keys(res).length).to.be.gt(0)",
+									"    pm.expect(res.$id).to.be.not.undefined",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{pmMediaToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{storageUrl}}/schema/{{schemaName}}",
+							"host": [
+								"{{storageUrl}}"
+							],
+							"path": [
+								"schema",
+								"{{schemaName}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "noauth"
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					"// --------------------------------------------------------------------------------------------------------------",
+					"// Libs",
+					"// --------------------------------------------------------------------------------------------------------------",
+					"",
+					"log = {",
+					"    lvl: 1,",
+					"    e: (here, ...args) => log.lvl >= 1 && console.error(`E [${here}] ERROR:`, ...args),",
+					"    d: (here, ...args) => log.lvl >= 2 && console.log(`D [${here}]`, ...args),",
+					"    t: (here, msg = '<', ...args) => log.lvl >= 3 && console.log(`T [${here}]`, msg, ...args),",
+					"}",
+					"",
+					"log.t('Time-related functions')",
+					"time = {",
+					"    now: () => new Date().toISOString(),",
+					"    nowEpochMS: () => new Date().getTime(),",
+					"    nowEpochS: (delay = 0) => Math.floor(new Date().getTime() / 1000 + delay),",
+					"    timezone: () => new Date().getTimezoneOffset(),",
+					"    wait: (delayMs, doSomething) => {",
+					"        log.t('wait', `Waiting ${delayMs / 1000}s...`)",
+					"        setTimeout(doSomething ? doSomething : () => { log.t('wait', `Waited ${delayMs / 1000}s`) }, delayMs)",
+					"    },",
+					"}",
+					"",
+					"log.t('Function to manipulate strings')",
+					"const mergeStrings = (sep, ...args) => {",
+					"    const here = 'mergeStrings'",
+					"    log.t(here)",
+					"    const argNb = args.length",
+					"    if (argNb == 0 || args[0] === undefined || args[0] === null) return ''",
+					"    let accumulatedStr = `${args[0]}`",
+					"    for (let i = 1; i < argNb; i++) {",
+					"        if (args[i] === undefined || args[i] === null) break",
+					"        const newChunk = `${args[i]}`",
+					"        const cleanChunk = newChunk.startsWith(sep) ? newChunk.slice(1) : newChunk",
+					"        accumulatedStr = accumulatedStr.endsWith(sep)",
+					"            ? accumulatedStr + cleanChunk",
+					"            : accumulatedStr + sep + cleanChunk",
+					"    }",
+					"    return accumulatedStr",
+					"}",
+					"const pathJoin = (...args) => mergeStrings('/', ...args)",
+					"",
+					"log.t('Postman variables memory access functions')",
+					"mem = {",
+					"    get: (name) => {",
+					"        const val = pm.variables.get(name) ?? pm.collectionVariables.get(name) ?? pm.environment.get(name) ?? pm.globals.get(name)",
+					"        log.t('mem.get', name, val)",
+					"        return val",
+					"    },",
+					"",
+					"    set: (name, val) => pm.collectionVariables.set(name, val),",
+					"",
+					"    initStoredVar: (name, defaultVal) => {",
+					"        const here = 'initStoredVar'",
+					"        if (!mem.get(name)) {",
+					"            log.t(here, `No value stored for ${name}`)",
+					"            const val = mem.get(name) ?? defaultVal",
+					"            mem.set(name, val)",
+					"            return val",
+					"        }",
+					"        return mem.get(name)",
+					"    },",
+					"",
+					"    wipeCollectionVars: (collectionVariables = pm.collectionVariables, keepVals, force = false) => {",
+					"        // 'Function to wipe the cached values from previous tests'",
+					"        const here = 'wipeCollectionVars'",
+					"        log.t(here)",
+					"        if (!force && collectionVariables.get('postmanEnv') == pm.environment.name) return",
+					"        const cache = {}",
+					"        if (keepVals === undefined) keepVals = [CATALOG_JWT_NAME, STORAGE_JWT_NAME, MANAGER_JWT_NAME, PORTAL_TOKEN_NAME]",
+					"        keepVals = ['stamp', ...keepVals]",
+					"        keepVals.map(key => {",
+					"            const val = collectionVariables.get(key) ?? pm.collectionVariables.get(key)",
+					"            if (val) {",
+					"                cache[key] = collectionVariables.get(key)",
+					"                log.t(here, `Memorizing the protected variable ${key}: ${cache[key]}`)",
+					"            }",
+					"        })",
+					"        collectionVariables.clear()",
+					"        log.t(here, 'collectionVariables wiped:', JSON.stringify(collectionVariables))",
+					"        log.t(here, 'collectionVariables:', JSON.stringify(collectionVariables.values))",
+					"",
+					"        for (const key in cache) {",
+					"            log.t(`Restoring the variable ${key}: ${cache[key]}`)",
+					"            collectionVariables.set(key, cache[key])",
+					"            pm.collectionVariables.set(key, cache[key])",
+					"        }",
+					"        collectionVariables.set('dateUpdate', time.now())",
+					"        collectionVariables.set('postmanEnv', pm.environment.name)",
+					"    }",
+					"}",
+					"",
+					"log.t('Function to homogenize old environment variables')",
+					"function changeVarName(oldName, newName) {",
+					"    const here = 'changeVarName'",
+					"    const val = pm.environment.get(oldName)",
+					"    if (!val) return",
+					"    log.t(here, `${oldName}=\"${val}\"`)",
+					"    if (!mem.get(newName)) {",
+					"        pm.environment.set(newName, val)",
+					"        log.t(here, `${newName}=\"${val}\"`)",
+					"    } else {",
+					"        log.t(here, `(Already set) ${newName}=\"${val}\"`)",
+					"    }",
+					"    pm.environment.unset(oldName)",
+					"    log.t(here, `=> ${oldName}=\"${pm.environment.get(oldName)}\"`)",
+					"    log.t(here, `=> ${newName}=\"${pm.environment.get(newName)}\"`)",
+					"}",
+					"",
+					"log.t('Variable names homogenization')",
+					"function homogenizeVars() {",
+					"    changeVarName('cryptoJwtUrl', 'jwtAuthUrl')",
+					"    changeVarName('apiUrl', 'catalogUrl')",
+					"    changeVarName('pmBackUrl', 'managerUrl')",
+					"    changeVarName('pmFrontUrl', 'managerFrontUrl')",
+					"    changeVarName('mediaUrl', 'storageUrl')",
+					"    changeVarName('pmAdminUsr', 'managerAdminUsr')",
+					"    changeVarName('pmAdminPwd', 'managerAdminPwd')",
+					"    if (!(pm.environment.get('storageUrl'))) {",
+					"        pm.environment.set('storageUrl', `${mem.get('managerUrl')}`.replace('/prodmanager', '/media'))",
+					"    }",
+					"    const catalogUrl = pm.environment.get('catalogUrl')",
+					"    if (!(catalogUrl.endsWith('api') || catalogUrl.endsWith('catalog'))) {",
+					"",
+					"        const catalogPrefix = mem.get('catalogPrefix') ?? 'api'",
+					"        pm.environment.set('catalogServer', catalogUrl)",
+					"        pm.environment.set('catalogUrl', pathJoin(catalogUrl, catalogPrefix))",
+					"        pm.environment.unset(catalogPrefix)",
+					"    } else {",
+					"        pm.environment.set('catalogServer', catalogUrl.replace(/\\/(api|catalog)/, ''))",
+					"    }",
+					"    pm.environment.set('homogenized', true)",
+					"}",
+					"if (!pm.environment.get('homogenized')) homogenizeVars()",
+					"",
+					"",
+					"const regexCheck = (regex, str) => str ? regex.exec(`${str}`) : regex",
+					"",
+					"log.t('Constants initialization')",
+					"const REGEX_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i",
+					"const REGEX_JWT = /^[\\w-]+\\.[\\w-]+\\.([\\w-]+={0,3})$/",
+					"const REGEX_API_VERSION = /^[0-9]+\\.[0-9]+(\\.[0-9]+)?[a-z]*$/",
+					"const REGEX_URI = /^(https?|ftp):\\/\\/([\\w-]+(\\.[\\w-]+)+|(:[0-9]+)?)([\\w.,@?^=%&amp;:\\/~+#-]*[\\w@?^=%&amp;\\/~+#-])?$/",
+					"const REGEX_GIT_HASH_SHORT = /^[a-z0-9]{7}/",
+					"",
+					"match = {",
+					"    uuid: (str) => regexCheck(REGEX_UUID, str),",
+					"    jwt: (str) => regexCheck(REGEX_JWT, str),",
+					"    version: (str) => regexCheck(REGEX_API_VERSION, str),",
+					"    uri: (str) => regexCheck(REGEX_URI, str),",
+					"    gitHash: (str) => regexCheck(REGEX_GIT_HASH_SHORT, str),",
+					"}",
+					"",
+					"error = {",
+					"    throwNotFound: (msg) => { throw { statusCode: 404, name: 'NotFound', message: msg } }",
+					"}",
+					"",
+					"codec = {",
+					"    streamToString: (data) => data?.stream?.toString('utf8'),",
+					"    getResJson: (res, prop) => {",
+					"        const resJson = JSON.parse(codec.streamToString(res))",
+					"        return prop ? resJson?.[prop] : resJson",
+					"    },",
+					"    fromBase64: (data) => Buffer.from(data, 'base64')?.toString('utf-8'),",
+					"",
+					"    fromBase64Url: (base64UrlStr) => {",
+					"        const here = 'fromBase64Url'",
+					"        log.t(here)",
+					"        if (!base64UrlStr) return ''",
+					"        const paddedStr = (base64UrlStr.length % 4 == 0)",
+					"            ? base64UrlStr",
+					"            : base64UrlStr + \"====\".substring(base64UrlStr.length % 4)",
+					"        const base64Str = paddedStr",
+					"            .replace(\"_\", \"/\")",
+					"            .replace(\"-\", \"+\")",
+					"        return codec.fromBase64(base64Str)",
+					"    }",
+					"}",
+					"",
+					"log.t('Functions to initialiaze test variables')",
+					"rand = {",
+					"    get: (randName) => pm.collectionVariables.replaceIn(randName),",
+					"",
+					"    uuid: () => rand.get('{{$randomUUID}}'),",
+					"",
+					"    pickInList: (list) => list[(require('lodash')).random(0, list.length - 1)],",
+					"",
+					"    pick: (listName) => rand.pickInList(mem.get(listName)),",
+					"",
+					"    initVal: (field) => {",
+					"        const val = mem.get(field)",
+					"        if (val) return val",
+					"        const randVal = rand.uuid()",
+					"        mem.set(field, randVal, 'string')",
+					"        return randVal",
+					"    },",
+					"",
+					"    getContactEmail: (contactName) => `${contactName",
+					"        .replace(/(Miss|(Ms|Mrs|Mr|Dr)\\.)\\s|'Jr\\.'/gi, '')",
+					"        .toLowerCase()",
+					"        .replace(/\\s+|\\.\\./g, '.')",
+					"        .replace(/^\\.+|\\.+$|\\'+/g, '')",
+					"        }@irisa.fr`,",
+					"",
+					"    randomize: (field) => {",
+					"        const randVal = rand.uuid()",
+					"        mem.set(field, randVal)",
+					"        return randVal",
+					"    },",
+					"}",
+					"",
+					"log.t('Functions for connections')",
+					"co = {",
+					"    reqToStr: (req) => `${req.method} ${req.url}`,",
+					"    sendRequest: (req) => {",
+					"        const here = 'sendRequest'",
+					"        log.t(here, co.reqToStr(req))",
+					"        return new Promise(",
+					"            (resolve, reject) => pm.sendRequest(req, (err, res) => {",
+					"                if (!err && res?.code / 100 < 4) {",
+					"                    log.t(`Request ${co.reqToStr(req)} succeeded with code ${res?.code}`)",
+					"                    return resolve(res)",
+					"                }",
+					"                log.t(`Request ${co.reqToStr(req)} failed with code ${res?.code}`)",
+					"                let message = `Request \"${req.url ?? req}\" failed (${res?.code})`",
+					"                if (err?.message) message += `: ${err.message}`",
+					"                return reject({ message })",
+					"            })",
+					"        )",
+					"    },",
+					"}",
+					"",
+					"log.t('Constants initialization')",
+					"const TOKEN_DURATION_S = 4147200",
+					"const MANAGER_COOKIE_NAME = `pmFrontToken`",
+					"",
+					"const CATALOG_JWT_NAME = `catalogJwt-${pm.environment.name}`; mem.set('catalogJwtName', CATALOG_JWT_NAME)",
+					"const STORAGE_JWT_NAME = `storageJwt-${pm.environment.name}`; mem.set('storageJwtName', STORAGE_JWT_NAME)",
+					"const MANAGER_JWT_NAME = `managerJwt-${pm.environment.name}`; mem.set('managerJwtName', MANAGER_JWT_NAME)",
+					"const PORTAL_TOKEN_NAME = `portalJwt-${pm.environment.name}`; mem.set('portalJwtName', PORTAL_TOKEN_NAME)",
+					"",
+					"if (!pm.environment.get('portalUsr')) mem.set('skipPortalConnection', true)",
+					"",
+					"log.t('Functions for creating JWTs')",
+					"secu = {",
+					"    isTokenValid: (token) => {",
+					"        const here = 'isTokenValid'",
+					"        log.t(here, 'Checking token', token)",
+					"        if (!token || typeof token !== 'string' || !match.jwt(token)) {",
+					"            log.d(here, `Token is invalid: ${token}`)",
+					"            return false",
+					"        }",
+					"        const jwtBodyEncoded = token.split('.')[1]",
+					"        const jwtBody = JSON.parse(codec.fromBase64Url(jwtBodyEncoded))",
+					"        if (!jwtBody.exp) {",
+					"            log.d(here, 'No expiration time was found')",
+					"            return false",
+					"        }",
+					"        const isValid = jwtBody.exp > time.nowEpochS()",
+					"        log.d(here, `Token is ${(isValid ? '' : 'not ')}valid`)",
+					"        return isValid",
+					"    },",
+					"",
+					"    getCookie: (res, cookieName) => {",
+					"        const here = 'getCookie'",
+					"        log.t(here)",
+					"        for (const cookie in res['Set-Cookie']) {",
+					"            log.d(here, 'cookie', cookie)",
+					"            if (cookie.startsWith(cookieName + '='))",
+					"                return cookie.slice(cookieName.length() + 1)",
+					"        }",
+					"        return 'OK'",
+					"    },",
+					"",
+					"    renewToken: async (tokenName, req, body, extractToken = (res) => codec.streamToString(res)) => {",
+					"        const here = 'renewToken'",
+					"        log.t(here)",
+					"        let res",
+					"        try {",
+					"            if (body && !body.raw) req.body = { mode: 'raw', raw: JSON.stringify(body) }",
+					"            log.d(here, 'req body:', req.body)",
+					"            res = await co.sendRequest(req)",
+					"            log.d(here, 'reply received:', res)",
+					"        } catch (err) {",
+					"            log.e(here, `Cannot reach ${req.url}:`, err.message)",
+					"            throw new Error(`Cannot reach ${req.url}`)",
+					"        }",
+					"        pm.expect(res.code == 200).to.be.true",
+					"",
+					"        const token = extractToken(res)",
+					"        log.d(here, 'extractedToken:', token)",
+					"        if (!token) {",
+					"            log.e(here, 'Could not extract token from', JSON.stringify(res))",
+					"            throw new Error(`Could not extract token from ${res}`)",
+					"        }",
+					"        if (token == 'OK') return",
+					"        if (!secu.isTokenValid(token)) {",
+					"            log.e(here, `Token not vaild: ${token}`)",
+					"            throw new Error(`Token not vaild: ${token}`)",
+					"        }",
+					"        mem.set(tokenName, token)",
+					"        return token",
+					"    },",
+					"",
+					"    getStorageJwt: async () => {",
+					"        const here = 'getStorageJwt'",
+					"        log.t(here)",
+					"        const token = mem.get(STORAGE_JWT_NAME)",
+					"        if (secu.isTokenValid(token)) return token",
+					"",
+					"        await secu.getManagerJwt()",
+					"",
+					"        const req = {",
+					"            url: pathJoin(mem.get('managerUrl'), mem.get('managerBack'), '/media/jwt'),",
+					"            method: 'GET'",
+					"        }",
+					"        return await secu.renewToken(STORAGE_JWT_NAME, req, null, res => JSON.parse(res.text()).token)",
+					"    },",
+					"",
+					"    getCatalogJwt: async () => {",
+					"        const here = 'getCatalogJwt'",
+					"        log.t(here)",
+					"        const token = mem.get(CATALOG_JWT_NAME)",
+					"        if (secu.isTokenValid(token)) return token",
+					"        const body = {",
+					"            'exp': time.nowEpochS(TOKEN_DURATION_S),",
+					"            'sub': mem.get('jwtAuthDelegate') ?? 'rudi_api_pm',",
+					"            'client_id': mem.get('jwtAuthUser') ?? 'pm',",
+					"        }",
+					"        const req = {",
+					"            url: pathJoin(mem.get('jwtAuthUrl'), 'forge'),",
+					"            method: 'POST',",
+					"            header: { 'Content-Type': 'application/json' }",
+					"        }",
+					"        return await secu.renewToken(CATALOG_JWT_NAME, req, body)",
+					"    },",
+					"",
+					"    getPortalJwt: async () => {",
+					"        const here = 'getPortalJwt'",
+					"        log.t(here)",
+					"        if (mem.get('skipPortalConnection')) return NO_PORTAL_MSG",
+					"",
+					"        const token = mem.get(PORTAL_TOKEN_NAME)",
+					"        if (secu.isTokenValid(token)) return token",
+					"",
+					"        const catalogToken = await secu.getCatalogJwt()",
+					"        const req = {",
+					"            url: pathJoin(mem.get('apiUrl'), catalogPrefix, 'admin/portal/token'),",
+					"            method: 'GET',",
+					"            header: {",
+					"                'Content-Type': 'application/json',",
+					"                'Authorization': `Bearer ${catalogToken}`",
+					"            },",
+					"        }",
+					"        return await secu.renewToken(PORTAL_TOKEN_NAME, req, null, (res) => codec.getResJson(res, 'access_token'))",
+					"    },",
+					"",
+					"    getManagerJwt: async () => {",
+					"        const here = 'getManagerJwt'",
+					"        log.t(here)",
+					"        const token = mem.get(MANAGER_JWT_NAME)",
+					"        if (secu.isTokenValid(token)) return token",
+					"        const body = {",
+					"            'exp': time.nowEpochS(TOKEN_DURATION_S),",
+					"            'key': mem.get('jwtAuthDelegate') ?? 'rudi_api_pm',",
+					"            'client_id': mem.get('jwtAuthUser') ?? 'manager_admin',",
+					"        }",
+					"        const req = {",
+					"            url: pathJoin(mem.get('jwtAuthUrl'), 'forge'),",
+					"            method: 'POST',",
+					"            header: { 'Content-Type': 'application/json' }",
+					"        }",
+					"        return await secu.renewToken(MANAGER_JWT_NAME, req, body)",
+					"    },",
+					"",
+					"    getManagerCookie: async () => {",
+					"        const here = 'getManagerCookie'",
+					"        log.t(here)",
+					"",
+					"        const token = mem.get(MANAGER_JWT_NAME)",
+					"        if (secu.isTokenValid(token)) return token",
+					"        const body = {",
+					"            'username': mem.get('managerAdminUsr'),",
+					"            'password': mem.get('managerAdminPwd')",
+					"        }",
+					"        const req = {",
+					"            url: pathJoin(mem.get('managerUrl'), mem.get('managerBack'), '/front/login'),",
+					"            method: 'POST',",
+					"            header: { 'Content-Type': 'application/json' }",
+					"        }",
+					"        return await secu.renewToken(MANAGER_JWT_NAME, req, null, res => console.log(res.json()))",
+					"    }",
+					"}",
+					"",
+					"",
+					"",
+					"// --------------------------------------------------------------------------------------------------------------",
+					"// Init function",
+					"// --------------------------------------------------------------------------------------------------------------",
+					"const init = async () => {",
+					"    // await Promise.all([secu.getCatalogJwt(), secu.getManagerJwt(), secu.getStorageJwt()])",
+					"}",
+					"",
+					"",
+					"// --------------------------------------------------------------------------------------------------------------",
+					"// Launch",
+					"// --------------------------------------------------------------------------------------------------------------",
+					"init().then(() => log.t('run', 'Init completed'))",
+					"time.wait(50, () => log.t('run', 'Pre-request Scripts loaded'))",
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "stamp",
+			"value": "testsStorage"
+		},
+		{
+			"key": "dateUpdate",
+			"value": ""
+		},
+		{
+			"key": "postmanEnv",
+			"value": ""
+		},
+		{
+			"key": "catalogJwtName",
+			"value": ""
+		},
+		{
+			"key": "storageJwtName",
+			"value": ""
+		},
+		{
+			"key": "managerJwtName",
+			"value": ""
+		},
+		{
+			"key": "portalJwtName",
+			"value": ""
+		},
+		{
+			"key": "catalogJwt-_Dev-Local",
+			"value": ""
+		},
+		{
+			"key": "managerJwt-_Dev-Local",
+			"value": ""
+		},
+		{
+			"key": "storageJwt-_Dev-Local",
+			"value": ""
+		},
+		{
+			"key": "revision",
+			"value": ""
+		},
+		{
+			"key": "schemaName",
+			"value": ""
+		}
+	]
+}

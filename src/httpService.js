@@ -26,6 +26,9 @@ const ERRORS = {
   401: 'Forbidden',
   404: 'Not Found',
 }
+
+const getFileMetadataHeaders = (req) => req.headers['file-metadata'] || req.headers.file_metadata
+
 /**
  * The code express based HTTP server.
  * The web server creates the media db, and serves:
@@ -337,14 +340,14 @@ export class HttpService {
   root(req, res) {
     const aclStatus = this.ac.getAccessStatus(req, res)
     if (!this.ac.checkSystemAccessStatus(aclStatus, '---')) return
-    if (req?.headers?.file_metadata) return this.media(req, res)
+    if (getFileMetadataHeaders(req)) return this.media(req, res)
 
     return this.sendAndClose(res, 400, { status: 'error', msg: `RUDI Storage access driver, access restricted` })
   }
 
   /**
    * Serves a post of a new media.
-   * The post HTTP header must contain the ":file_metadata" with all necessary fields.
+   * The post HTTP header must contain the "File-Metadata" with all necessary fields.
    *
    * @param {object} req - the HTTP request
    * @param {object} res - the HTTP response.
@@ -374,13 +377,13 @@ export class HttpService {
    * @param {object} res - the HTTP response.
    */
   optionCors(req, res) {
-    const baseHeaderList =
-      'Content-Type, Authorization, Content-Length, X-Requested-With, file_metadata, Media-Access-Method, media_cookie'
+    const baseHeaderList = `Content-Type, Authorization, Content-Length, X-Requested-With`
+    const customHeaderList = `file-metadata, File-Metadata, file_metadata, Media-Access-Method, storage-cookie, Storage-Cookie, media_cookie,`
     const extendedHeaderList = 'Cache-Control, Pragma, Sec-GPC'
     const headersOpts = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-      'Access-Control-Allow-Headers': `${baseHeaderList}, ${extendedHeaderList}`,
+      'Access-Control-Allow-Headers': `${baseHeaderList}, ${customHeaderList}, ${extendedHeaderList}`,
     }
     res.header(headersOpts).status(200).end()
   }
@@ -461,7 +464,7 @@ export class HttpService {
 
   /**
    * Post a new media.
-   * The post HTTP header must contain the ":file_metadata" with all necessary fields.
+   * The post HTTP header must contain the ":File-Metadata" with all necessary fields.
    *
    * @param {object} req - the HTTP request
    * @param {object} res - the HTTP response.
@@ -472,10 +475,12 @@ export class HttpService {
     if (!this.ac.checkSystemAccessStatus(aclStatus, '-w-'))
       return this.sendAndClose(res, 401, { status: 'error', msg: 'permission refused' })
 
-    if (!req.headers?.file_metadata)
-      return this.sendAndClose(res, 400, { status: 'error', msg: 'no metadata provided' })
+    let metadata = getFileMetadataHeaders(req)
+    if (!metadata) {
+      this.syslog.warn(`No metadata provided in headers: ${JSON.stringify(req.headers)}`)
+      return this.sendAndClose(res, 400, { status: 'error', msg: 'no metadata provided in headers' })
+    }
 
-    let metadata = req.headers.file_metadata
     try {
       metadata = JSON.parse(metadata)
     } catch (err) {
@@ -560,7 +565,7 @@ export class HttpService {
 
   /**
    * Commit the post/append of a new media.
-   * The post HTTP header must contain the ":file_metadata" with all necessary fields.
+   * The post HTTP header must contain the ":File-Metadata" with all necessary fields.
    *
    * @param {object} req - the HTTP request
    * @param {object} res - the HTTP response.
@@ -579,10 +584,10 @@ export class HttpService {
       return this.processCommit(res, zoneName, commitUuid, aclStatus)
     }
 
-    if (req.headers?.media_commit) {
-      // this.syslog.debug('[commitMedia] media_commit: ' + jsonToStr(req.headers?.media_commit))
-      const metadata = req.headers.media_commit
-      return this.processJsonAndCommit(res, metadata, aclStatus)
+    const headersMetadata = req.headers['Media-Commit'] || req.headers['media-commit'] || req.headers.media_commit
+    if (headersMetadata) {
+      // this.syslog.debug('[commitMedia] media_commit: ' + jsonToStr(metadata))
+      return this.processJsonAndCommit(res, headersMetadata, aclStatus)
     }
 
     const commitInfo = jsonToStr(req.body)
@@ -628,12 +633,12 @@ export class HttpService {
       uuid = req.query.commit_uuid
       this.processDelete(res, uuid, aclStatus)
     } else {
-      let metadata = req.body
-      if (req.headers?.media_delete) {
-        metadata = req.headers.media_delete
-        this.processJsonAndDelete(res, metadata, aclStatus)
+      const headersMetadata = req.headers['Media-Delete'] || req.headers['media-delete'] || req.headers.media_delete
+      if (headersMetadata) {
+        this.processJsonAndDelete(res, headersMetadata, aclStatus)
       } else {
         // Bufferize file data
+        const metadata = req.body
         const contentLength = req.headers['Content-Length'] || req.headers['content-length']
         const size = parseInt(contentLength) || 4096
         const dwnld = new DownloadService(4096, size, this.syslog)
@@ -660,10 +665,9 @@ export class HttpService {
     let reqUuid = '-'
     if (req.params?.uuid) reqUuid = req.params.uuid
     else {
-      if (!req.headers?.file_metadata) {
-        return this.sendAndClose(res, 400, { status: 'error', msg: 'no meta-data provided' })
-      }
-      let metadata = req.headers.file_metadata
+      let metadata = getFileMetadataHeaders(req)
+      if (!metadata) return this.sendAndClose(res, 400, { status: 'error', msg: 'no meta-data provided' })
+
       try {
         metadata = JSON.parse(metadata)
       } catch (err) {

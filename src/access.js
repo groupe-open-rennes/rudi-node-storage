@@ -267,7 +267,7 @@ export class AccessControl {
     return aclStatus
   }
   _readJwtAccessRights(header) {
-    const klist = ['cookie', 'media_cookie']
+    const klist = ['cookie', 'Storage-Cookie', 'storage-cookie', 'media_cookie']
     for (const headerKey of klist) {
       if (header?.[headerKey]) {
         const cookies = header[headerKey].split(' ')
