@@ -9,7 +9,7 @@
     "@aqmo.org/rudi_logger": "^1.1.6",
     "express": "^4.21.2",
     "ini": "^5.0.0",
-    "magic-bytes.js": "^1.11.0",
+    "magic-bytes.js": "^1.12.1",
     "md5": "^2.3.0",
     "minimist": "^1.2.8",
     "mongodb": "^6.16.0",
@@ -23,7 +23,7 @@
     "eslint-config-prettier": "^10.1.2",
     "eslint-plugin-prettier": "^5.2.6",
     "eslint-plugin-unused-imports": "^4.1.4",
-    "nodemon": "^3.1.9",
+    "nodemon": "^3.1.10",
     "prettier": "^3.5.3"
   },
   "couldHaveDependencies": {
