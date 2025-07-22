@@ -118,7 +118,7 @@ export class BasicZone {
     const aclStatus = this.acldb.findUser('admin')
     if (aclStatus.accError) {
       const errd = this.acldb.errDesc(aclStatus.accError)
-      const errMsg = `[${this.name}][rudiprod] user not initialied: ${errd.accessMsg}`
+      const errMsg = `[${this.name}][rudiprod] user not initialized: ${errd.accessMsg}`
       this.syslog.error(errMsg)
       throw new Error(errMsg)
     }

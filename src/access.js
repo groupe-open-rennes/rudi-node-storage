@@ -237,34 +237,35 @@ export class AccessControl {
    * @returns {string}        - either the access rights or an HTTP error.
    */
   _readBasicAccessRights(header) {
-    let aclStatus = null
     if (header?.authorization || header?.Authorization) {
       const authorization = header.authorization || header.Authorization
       const [authType, b64auth] = authorization.split(' ') || ''
       if (authType.toLowerCase() == 'basic') {
         const pl = Buffer.from(b64auth, 'base64').toString().split(':')
-        if (pl.length < 2) aclStatus = this.acldb.newAclError('E05')
-        else {
-          let login = pl[0],
-            group = '-'
-          const password = pl.slice(1, pl.length).join(':')
-          const lg = login.split('@')
-          if (lg.length >= 2) {
-            login = lg.slice(0, lg.length - 1).join('@')
-            group = lg[lg.length - 1]
-          }
-          if (password != null) {
-            aclStatus = this.acldb.findUser(login, group, password)
-            this.notice(`login: ${aclStatus.uname}@${aclStatus.gname}`)
-          } else aclStatus = this.acldb.newAclError('E05')
+        if (pl.length < 2) return this.acldb.newAclError('E05')
+
+        let login = pl[0],
+          group = '-'
+        const password = pl.slice(1, pl.length).join(':')
+        const lg = login.split('@')
+        if (lg.length >= 2) {
+          login = lg.slice(0, lg.length - 1).join('@')
+          group = lg[lg.length - 1]
         }
-      } else if (authType.toLowerCase() == 'bearer') {
-        aclStatus = this._jwtAccessRights('rudi.media.auth', b64auth)
+        if (!password) return this.acldb.newAclError('E05')
+
+        const aclStatus = this.acldb.findUser(login, group, password)
+        this.notice(`login: ${aclStatus.uname}@${aclStatus.gname}`)
+        return aclStatus
+      }
+      if (authType.toLowerCase() == 'bearer') {
+        const aclStatus = this._jwtAccessRights('rudi.media.auth', b64auth)
+        if (!aclStatus) return this.acldb.newAclError('E05')
         this.notice(`token: ${aclStatus.uname}:${aclStatus.gname}`)
-        if (!aclStatus) aclStatus = this.acldb.newAclError('E05')
-      } else aclStatus = this.acldb.newAclError('E05')
+        return aclStatus
+      }
+      return this.acldb.newAclError('E05')
     }
-    return aclStatus
   }
   _readJwtAccessRights(header) {
     const klist = ['cookie', 'Storage-Cookie', 'storage-cookie', 'media_cookie']

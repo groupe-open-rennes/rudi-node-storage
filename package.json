@@ -12,19 +12,19 @@
     "magic-bytes.js": "^1.12.1",
     "md5": "^2.3.0",
     "minimist": "^1.2.8",
-    "mongodb": "^6.16.0",
+    "mongodb": "^6.17.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.26.10",
-    "@babel/eslint-parser": "^7.27.0",
-    "@babel/preset-env": "^7.26.9",
-    "eslint": "^9.25.1",
-    "eslint-config-prettier": "^10.1.2",
-    "eslint-plugin-prettier": "^5.2.6",
+    "@babel/core": "^7.28.0",
+    "@babel/eslint-parser": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "eslint": "^9.31.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.3",
     "eslint-plugin-unused-imports": "^4.1.4",
     "nodemon": "^3.1.10",
-    "prettier": "^3.5.3"
+    "prettier": "^3.6.2"
   },
   "couldHaveDependencies": {
     "unix-dgram": "^2.0.4"

@@ -189,6 +189,7 @@ export class User {
    * @returns {string}        - passwords matches
    */
   checkPassword(input) {
+    if (!input) return false
     let p = this.password
     if (p == '' || p == '-') return false
     if (p.length > 8 && p.startsWith('$') && p[2] == '$' && p.endsWith('$')) {
