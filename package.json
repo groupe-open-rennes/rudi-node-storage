@@ -7,24 +7,24 @@
   "dependencies": {
     "@aqmo.org/jwt-lib": "^1.1.14",
     "@aqmo.org/rudi_logger": "^1.1.6",
-    "express": "^4.21.2",
+    "express": "^4.22.1",
     "ini": "^5.0.0",
     "magic-bytes.js": "^1.12.1",
     "md5": "^2.3.0",
     "minimist": "^1.2.8",
-    "mongodb": "^6.20.0",
+    "mongodb": "6.9.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.28.4",
-    "@babel/eslint-parser": "^7.28.4",
-    "@babel/preset-env": "^7.28.3",
-    "eslint": "^9.36.0",
+    "@babel/core": "^7.28.6",
+    "@babel/eslint-parser": "^7.28.6",
+    "@babel/preset-env": "^7.28.6",
+    "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
-    "eslint-plugin-unused-imports": "^4.2.0",
-    "nodemon": "^3.1.10",
-    "prettier": "^3.6.2"
+    "eslint-plugin-unused-imports": "^4.3.0",
+    "nodemon": "^3.1.11",
+    "prettier": "^3.7.4"
   },
   "couldHaveDependencies": {
     "unix-dgram": "^2.0.4"
