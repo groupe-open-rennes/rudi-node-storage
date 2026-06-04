@@ -46,6 +46,7 @@ export const DEFAULT_CONF = {
   },
   storage: {
     media_dir: process.env.HOME + '/_media',
+    max_file_size: 500e6,
     acc_timeout: 60 * 2,
     zones: [
       { name: 'zone1', staging_time: 300, destroy_time: 600 },

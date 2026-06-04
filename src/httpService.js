@@ -20,7 +20,7 @@ import { DownloadService } from './httpDownloadService.js'
 import { SchemaSet } from './schema.js'
 import { jsonToStr, pathJoin } from './utils.js'
 
-const MAX_FILE_SIZE = 500e6
+const MAX_FILE_SIZE = 500e6 // 500 MB
 const ERRORS = {
   400: 'Bad Request',
   401: 'Forbidden',
@@ -46,6 +46,7 @@ export class HttpService {
     this.port = configuration.server.listening_port
     this.netInterface = configuration.server.listening_address
     this.server = configuration.server.server_url
+    this.max_file_size = Number(configuration.storage?.max_file_size) || MAX_FILE_SIZE
 
     this.httpPrefix = this._normalizeHttpPrefix(configuration.server.server_prefix)
 
@@ -90,6 +91,7 @@ export class HttpService {
 
     this.logweb = this.syslog.getWebInterface()
     this.ac = new AccessControl(configuration.auth, this.syslog)
+
     if (this.logweb) this.logweb.setWebAccessControlInterface(this.ac)
     // this.wl.setWebAccessControlInterface(this.ac);
 
@@ -494,7 +496,8 @@ export class HttpService {
     const chunkSize = 65536 * 4
     const contentLength = req.headers['Content-Length'] ?? req.headers['content-length']
     const fileSize = metadata.file_size || parseInt(contentLength) || chunkSize
-    if (fileSize > MAX_FILE_SIZE) {
+
+    if (this.max_file_size && fileSize > this.max_file_size) {
       this.syslog.error(`file too large, use a different upload method: ${jsonToStr(metadata)}`)
       return this.sendAndClose(res, 400, { status: 'error', msg: 'file too large, use a different upload method' })
     }
