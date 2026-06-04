@@ -6,7 +6,7 @@
   "type": "module",
   "dependencies": {
     "@aqmo.org/jwt-lib": "^1.1.15",
-    "@aqmo.org/rudi_logger": "^1.1.6",
+    "@aqmo.org/rudi_logger": "^1.1.7",
     "express": "^4.22.2",
     "ini": "^7.0.0",
     "ip-address": "^10.2.0",
