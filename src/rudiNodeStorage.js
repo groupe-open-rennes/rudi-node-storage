@@ -35,7 +35,7 @@ function updateProperty(base, updated) {
   for (const elt in base) {
     if (elt in updated) {
       if (typeof updated[elt] == 'object') newo[elt] = updateProperty(base[elt], updated[elt])
-      else if (typeof base[elt] == 'number') newo[elt] = parseInt(updated[elt])
+      else if (typeof base[elt] == 'number') newo[elt] = Number(updated[elt])
       else {
         try {
           newo[elt] = JSON.parse(updated[elt])
@@ -76,7 +76,7 @@ function parseIniMultiligne(iniFileContent) {
       }
     }
   }
-  // console.debug('T content.storage.zones:', content.storage.zones)
+  // console.debug('T content.storage.max_file_size:', content.storage.max_file_size)
   return content
 }
 /**
@@ -92,8 +92,9 @@ function fetchAndParseArguments(confDefault, defaultConfFilename) {
   try {
     const iniFileContent = readFileSync(confFilename, 'utf-8')
     const config = parseIniMultiligne(iniFileContent)
-    // console.debug('config:', config)
     configuration = updateProperty(confDefault, config)
+    console.debug('end config.storage.max_file_size:', configuration.storage.max_file_size)
+
     // console.debug('configuration:', configuration)
   } catch (err) {
     console.error('warning: configuration file ignored: ' + err)
